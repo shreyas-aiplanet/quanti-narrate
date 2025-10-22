@@ -1,14 +1,34 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AIInsight } from "@/data/salesData";
-import { TrendingUp, AlertTriangle, Lightbulb, MessageSquare, Bot, User } from "lucide-react";
+import { TrendingUp, AlertTriangle, Lightbulb, MessageSquare, Bot, User, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface AIInsightsPanelProps {
   insights: AIInsight[];
 }
 
 export const AIInsightsPanel = ({ insights }: AIInsightsPanelProps) => {
+  const [inputMessage, setInputMessage] = useState("");
+
+  const handleSendMessage = () => {
+    if (inputMessage.trim()) {
+      // Placeholder for future functionality
+      console.log("Message sent:", inputMessage);
+      setInputMessage("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const getInsightIcon = (type: AIInsight['type']) => {
     switch (type) {
       case 'trend':
@@ -115,6 +135,26 @@ export const AIInsightsPanel = ({ insights }: AIInsightsPanelProps) => {
                   </Badge>
                 </div>
               </div>
+            </div>
+
+            {/* Input Field */}
+            <div className="flex gap-2 mt-4">
+              <Input
+                type="text"
+                placeholder="Ask a question about sales trends..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1"
+              />
+              <Button 
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim()}
+                size="icon"
+                className="shrink-0"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
