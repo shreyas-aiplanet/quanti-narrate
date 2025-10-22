@@ -12,66 +12,114 @@ export interface ProductData {
   id: string;
   name: string;
   category: string;
+  plant: string;
+  area: string;
   data: SalesDataPoint[];
 }
 
 // Generate realistic sales data with seasonal patterns and growth trends
 export const generateSalesData = (): ProductData[] => {
   const products = [
-    { id: 'prod-a', name: 'Product A - Industrial Components', category: 'Industrial', baseValue: 15000000, growth: 0.08 },
-    { id: 'prod-b', name: 'Product B - Consumer Goods', category: 'Consumer', baseValue: 25000000, growth: 0.12 },
-    { id: 'prod-c', name: 'Product C - Raw Materials', category: 'Materials', baseValue: 18000000, growth: 0.06 },
-    { id: 'prod-d', name: 'Product D - Finished Goods', category: 'Finished', baseValue: 30000000, growth: 0.10 },
+    { id: 'prod-a', name: 'Product A - Industrial Components', category: 'Industrial', baseValue: 12000000, growth: 0.09 },
+    { id: 'prod-b', name: 'Product B - Consumer Goods', category: 'Consumer', baseValue: 20000000, growth: 0.13 },
+    { id: 'prod-c', name: 'Product C - Raw Materials', category: 'Materials', baseValue: 15000000, growth: 0.07 },
+    { id: 'prod-d', name: 'Product D - Finished Goods', category: 'Finished', baseValue: 25000000, growth: 0.11 },
   ];
 
-  return products.map(product => {
-    const data: SalesDataPoint[] = [];
-    
-    // Historical data (FY23-FY25)
-    for (let year = 23; year <= 25; year++) {
-      const yearIndex = year - 23;
-      const baseGrowth = Math.pow(1 + product.growth, yearIndex);
-      const seasonalVariation = Math.sin(yearIndex * Math.PI / 2) * 0.1 + 1;
-      const randomVariation = 0.95 + Math.random() * 0.1;
-      
-      data.push({
-        fiscalYear: `FY${year}`,
-        sales: Math.round(product.baseValue * baseGrowth * seasonalVariation * randomVariation),
-        forecast: false,
+  const plantMultipliers: Record<string, number> = {
+    'plant-1': 1.2,  // North Plant - Higher capacity
+    'plant-2': 0.9,  // South Plant - Smaller operations
+    'plant-3': 1.1,  // East Plant - Medium capacity
+    'plant-4': 0.85, // West Plant - Newer facility
+  };
+
+  const areaMultipliers: Record<string, number> = {
+    'area-1': 1.3,  // North America - Largest market
+    'area-2': 1.1,  // Europe - Mature market
+    'area-3': 1.4,  // Asia Pacific - Growing market
+    'area-4': 0.8,  // Latin America - Emerging market
+  };
+
+  const results: ProductData[] = [];
+
+  products.forEach(product => {
+    plants.forEach(plant => {
+      areas.forEach(area => {
+        const plantMultiplier = plantMultipliers[plant.id];
+        const areaMultiplier = areaMultipliers[area.id];
+        const baseValue = product.baseValue * plantMultiplier * areaMultiplier;
+        
+        // Add product-specific variations
+        const productVariation = product.id === 'prod-b' ? 1.15 : 
+                                 product.id === 'prod-d' ? 1.1 : 1.0;
+        
+        const data: SalesDataPoint[] = [];
+        
+        // Historical data (FY19-FY25) - 7 years of actual data
+        for (let year = 19; year <= 25; year++) {
+          const yearIndex = year - 19;
+          const baseGrowth = Math.pow(1 + product.growth, yearIndex);
+          const seasonalVariation = Math.sin(yearIndex * Math.PI / 3) * 0.08 + 1;
+          const cyclicalPattern = Math.cos(yearIndex * Math.PI / 4) * 0.05 + 1;
+          
+          // Add market events (e.g., 2020 disruption)
+          const marketEvent = year === 20 ? 0.85 : year === 21 ? 0.92 : 1.0;
+          
+          const sales = Math.round(
+            baseValue * baseGrowth * seasonalVariation * cyclicalPattern * 
+            marketEvent * productVariation * (0.95 + Math.random() * 0.1)
+          );
+          
+          data.push({
+            fiscalYear: `FY${year}`,
+            sales,
+            forecast: false,
+          });
+        }
+        
+        // Forecasted data (FY26-FY35) - 10 years of forecast
+        for (let year = 26; year <= 35; year++) {
+          const yearIndex = year - 19;
+          const baseGrowth = Math.pow(1 + product.growth, yearIndex);
+          const seasonalVariation = Math.sin(yearIndex * Math.PI / 3) * 0.08 + 1;
+          const cyclicalPattern = Math.cos(yearIndex * Math.PI / 4) * 0.05 + 1;
+          
+          // Add market maturation in later years
+          const maturation = year > 30 ? 0.96 : year > 32 ? 0.93 : 1;
+          
+          const forecastValue = Math.round(
+            baseValue * baseGrowth * seasonalVariation * cyclicalPattern * 
+            maturation * productVariation
+          );
+          
+          // Increase uncertainty over time
+          const uncertaintyFactor = 0.85 - (year - 26) * 0.01;
+          const upperUncertainty = 1.15 + (year - 26) * 0.01;
+          
+          data.push({
+            fiscalYear: `FY${year}`,
+            sales: forecastValue,
+            forecast: true,
+            confidence: {
+              lower: Math.round(forecastValue * uncertaintyFactor),
+              upper: Math.round(forecastValue * upperUncertainty),
+            },
+          });
+        }
+        
+        results.push({
+          id: `${product.id}-${plant.id}-${area.id}`,
+          name: product.name,
+          category: product.category,
+          plant: plant.id,
+          area: area.id,
+          data,
+        });
       });
-    }
-    
-    // Forecasted data (FY26-FY35)
-    for (let year = 26; year <= 35; year++) {
-      const yearIndex = year - 23;
-      const baseGrowth = Math.pow(1 + product.growth, yearIndex);
-      const seasonalVariation = Math.sin(yearIndex * Math.PI / 2) * 0.1 + 1;
-      
-      // Add some market correction in later years
-      const marketCorrection = year > 30 ? 0.95 : 1;
-      
-      const forecastValue = Math.round(
-        product.baseValue * baseGrowth * seasonalVariation * marketCorrection
-      );
-      
-      data.push({
-        fiscalYear: `FY${year}`,
-        sales: forecastValue,
-        forecast: true,
-        confidence: {
-          lower: Math.round(forecastValue * 0.85),
-          upper: Math.round(forecastValue * 1.15),
-        },
-      });
-    }
-    
-    return {
-      id: product.id,
-      name: product.name,
-      category: product.category,
-      data,
-    };
+    });
   });
+
+  return results;
 };
 
 export interface AIInsight {

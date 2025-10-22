@@ -7,34 +7,103 @@ import { FilterPanel } from "@/components/FilterPanel";
 import { generateSalesData, generateAIInsights } from "@/data/salesData";
 
 const Index = () => {
-  const products = useMemo(() => generateSalesData(), []);
+  const allData = useMemo(() => generateSalesData(), []);
   
-  const [selectedProduct, setSelectedProduct] = useState(products[0].id);
+  // Get unique products for the filter
+  const uniqueProducts = useMemo(() => {
+    const seen = new Set();
+    return allData.filter(item => {
+      if (seen.has(item.name)) return false;
+      seen.add(item.name);
+      return true;
+    });
+  }, [allData]);
+  
+  const [selectedProduct, setSelectedProduct] = useState(uniqueProducts[0].name);
   const [selectedPlant, setSelectedPlant] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
 
-  const currentProduct = products.find(p => p.id === selectedProduct) || products[0];
-  const insights = useMemo(() => generateAIInsights(selectedProduct), [selectedProduct]);
+  // Filter and aggregate data based on selections
+  const filteredData = useMemo(() => {
+    return allData.filter(item => {
+      const matchesProduct = item.name === selectedProduct;
+      const matchesPlant = selectedPlant === "all" || item.plant === selectedPlant;
+      const matchesArea = selectedArea === "all" || item.area === selectedArea;
+      return matchesProduct && matchesPlant && matchesArea;
+    });
+  }, [allData, selectedProduct, selectedPlant, selectedArea]);
+
+  // Aggregate sales data across filtered items
+  const currentProduct = useMemo(() => {
+    if (filteredData.length === 0) return uniqueProducts[0];
+    
+    // Aggregate sales by fiscal year
+    const aggregatedData = new Map<string, { sales: number; count: number; forecast: boolean; lower?: number; upper?: number }>();
+    
+    filteredData.forEach(item => {
+      item.data.forEach(point => {
+        const existing = aggregatedData.get(point.fiscalYear);
+        if (existing) {
+          existing.sales += point.sales;
+          existing.count += 1;
+          if (point.confidence) {
+            existing.lower = (existing.lower || 0) + point.confidence.lower;
+            existing.upper = (existing.upper || 0) + point.confidence.upper;
+          }
+        } else {
+          aggregatedData.set(point.fiscalYear, {
+            sales: point.sales,
+            count: 1,
+            forecast: point.forecast || false,
+            lower: point.confidence?.lower,
+            upper: point.confidence?.upper,
+          });
+        }
+      });
+    });
+
+    const data = Array.from(aggregatedData.entries())
+      .map(([fiscalYear, values]) => ({
+        fiscalYear,
+        sales: values.sales,
+        forecast: values.forecast,
+        confidence: values.lower && values.upper ? {
+          lower: values.lower,
+          upper: values.upper,
+        } : undefined,
+      }))
+      .sort((a, b) => a.fiscalYear.localeCompare(b.fiscalYear));
+
+    return {
+      id: filteredData[0].id,
+      name: selectedProduct,
+      category: filteredData[0].category,
+      plant: selectedPlant,
+      area: selectedArea,
+      data,
+    };
+  }, [filteredData, selectedProduct, selectedPlant, selectedArea, uniqueProducts]);
+
+  const insights = useMemo(() => generateAIInsights(currentProduct.id.split('-')[0]), [currentProduct.id]);
 
   // Calculate metrics
-  const latestHistorical = currentProduct.data.find(d => !d.forecast);
+  const historicalData = currentProduct.data.filter(d => !d.forecast);
+  const latestHistorical = historicalData[historicalData.length - 1];
   const latestForecast = currentProduct.data[currentProduct.data.length - 1];
-  const previousYear = currentProduct.data[currentProduct.data.findIndex(d => d.fiscalYear === latestHistorical?.fiscalYear) - 1];
+  const previousYear = historicalData[historicalData.length - 2];
   
-  const yoyGrowth = previousYear 
-    ? ((latestHistorical!.sales - previousYear.sales) / previousYear.sales) * 100 
+  const yoyGrowth = previousYear && latestHistorical
+    ? ((latestHistorical.sales - previousYear.sales) / previousYear.sales) * 100 
     : 0;
 
-  const totalHistoricalSales = currentProduct.data
-    .filter(d => !d.forecast)
-    .reduce((sum, d) => sum + d.sales, 0);
+  const totalHistoricalSales = historicalData.reduce((sum, d) => sum + d.sales, 0);
 
-  const averageGrowthRate = currentProduct.data
-    .filter((d, i) => i > 0 && i < 3)
-    .reduce((sum, d, i, arr) => {
-      const prev = currentProduct.data[i];
-      return sum + ((d.sales - prev.sales) / prev.sales) * 100;
-    }, 0) / 2;
+  const averageGrowthRate = historicalData.length > 1
+    ? historicalData.slice(1).reduce((sum, d, i) => {
+        const prev = historicalData[i];
+        return sum + ((d.sales - prev.sales) / prev.sales) * 100;
+      }, 0) / (historicalData.length - 1)
+    : 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -61,7 +130,7 @@ const Index = () => {
         {/* Page Title */}
         <div className="mb-8">
           <h2 className="mb-2 text-3xl font-bold text-foreground">
-            Sales Trend Analysis (FY23–FY35)
+            Sales Trend Analysis (FY19–FY35)
           </h2>
           <p className="text-muted-foreground">
             Long-term sales forecasting to support production planning and strategic investment decisions
@@ -72,7 +141,7 @@ const Index = () => {
           {/* Sidebar */}
           <div className="space-y-6 lg:col-span-1">
             <FilterPanel
-              products={products}
+              products={uniqueProducts}
               selectedProduct={selectedProduct}
               onProductChange={setSelectedProduct}
               selectedPlant={selectedPlant}
@@ -88,7 +157,7 @@ const Index = () => {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard
                 title="Current Sales (FY25)"
-                value={`$${(latestHistorical?.sales || 0 / 1000000).toFixed(1)}M`}
+                value={`$${((latestHistorical?.sales || 0) / 1000000).toFixed(1)}M`}
                 change={yoyGrowth}
                 description="Year-over-year growth"
               />
@@ -101,7 +170,7 @@ const Index = () => {
               <MetricCard
                 title="Total Historical Sales"
                 value={`$${(totalHistoricalSales / 1000000).toFixed(1)}M`}
-                description="FY23-FY25 combined"
+                description="FY19-FY25 combined"
               />
               <MetricCard
                 title="Avg. Growth Rate"

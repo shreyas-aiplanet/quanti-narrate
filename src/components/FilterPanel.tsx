@@ -45,7 +45,7 @@ export const FilterPanel = ({
             </SelectTrigger>
             <SelectContent>
               {products.map((product) => (
-                <SelectItem key={product.id} value={product.id}>
+                <SelectItem key={product.id} value={product.name}>
                   {product.name}
                 </SelectItem>
               ))}
