@@ -13,10 +13,10 @@ interface AIInsightsPanelProps {
 
 export const AIInsightsPanel = ({ insights }: AIInsightsPanelProps) => {
   const [inputMessage, setInputMessage] = useState("");
+  const [showInput, setShowInput] = useState(false);
 
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
-      // Placeholder for future functionality
       console.log("Message sent:", inputMessage);
       setInputMessage("");
     }
@@ -137,25 +137,36 @@ export const AIInsightsPanel = ({ insights }: AIInsightsPanelProps) => {
               </div>
             </div>
 
-            {/* Input Field */}
-            <div className="flex gap-2 mt-4">
-              <Input
-                type="text"
-                placeholder="Ask a question about sales trends..."
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-              />
+            {/* Input Field Toggle */}
+            {!showInput ? (
               <Button 
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim()}
-                size="icon"
-                className="shrink-0"
+                onClick={() => setShowInput(true)}
+                className="mt-4 w-full"
+                variant="outline"
               >
-                <Send className="h-4 w-4" />
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Ask AI Assistant
               </Button>
-            </div>
+            ) : (
+              <div className="flex gap-2 mt-4">
+                <Input
+                  type="text"
+                  placeholder="Ask a question about sales trends..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim()}
+                  size="icon"
+                  className="shrink-0"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
