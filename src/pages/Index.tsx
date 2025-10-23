@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { BarChart3, Brain, Home } from "lucide-react";
+import { BarChart3, Brain, Home, Factory } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/MetricCard";
@@ -156,6 +156,12 @@ const Index = () => {
               <Brain className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium text-foreground">AI-Powered</span>
             </div>
+            <Link to="/capacity-planning">
+              <Button variant="default" size="sm">
+                <Factory className="mr-2 h-4 w-4" />
+                Capacity Planning
+              </Button>
+            </Link>
             <Link to="/">
               <Button variant="outline" size="sm">
                 <Home className="mr-2 h-4 w-4" />
@@ -170,10 +176,10 @@ const Index = () => {
         {/* Page Title */}
         <div className="mb-8">
           <h2 className="mb-2 text-3xl font-medium text-foreground">
-            Sales Trend Analysis (FY19–FY35)
+            Sales Analytics Dashboard
           </h2>
           <p className="text-muted-foreground">
-            Long-term sales forecasting to support production planning and strategic investment decisions
+            AI-powered sales forecasting and analytics to support production planning and strategic decision-making
           </p>
         </div>
 
