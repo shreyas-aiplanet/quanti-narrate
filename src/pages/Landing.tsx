@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { BarChart3, TrendingUp, Brain, ArrowRight, Factory } from "lucide-react";
+import { BarChart3, TrendingUp, Brain, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Landing = () => {
@@ -37,19 +37,13 @@ const Landing = () => {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/capacity-planning">
-              <Button size="lg" variant="outline" className="gap-2">
-                <Factory className="h-5 w-5" />
-                Capacity Planning
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
 
       {/* Features */}
       <section className="container mx-auto px-6 py-16">
-        <div className="grid gap-12 md:grid-cols-4">
+        <div className="grid gap-12 md:grid-cols-3">
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg border">
               <TrendingUp className="h-8 w-8 text-primary" />
@@ -71,18 +65,6 @@ const Landing = () => {
             </h3>
             <p className="text-sm text-muted-foreground">
               Get intelligent recommendations and trend analysis from our AI assistant
-            </p>
-          </div>
-
-          <div className="text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg border">
-              <Factory className="h-8 w-8 text-primary" />
-            </div>
-            <h3 className="mb-2 text-lg font-medium text-foreground">
-              Capacity Planning
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Identify expansion opportunities and optimize plant utilization with AI clustering
             </p>
           </div>
 

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { BarChart3, Brain, Home, Factory, Table as TableIcon } from "lucide-react";
+import { BarChart3, Brain, Home, Factory } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -178,12 +178,6 @@ const Index = () => {
                 <Brain className="h-5 w-5 text-primary" />
                 <span className="text-sm font-medium text-foreground">AI-Powered</span>
               </div>
-              <Link to="/capacity-planning">
-                <Button variant="default" size="sm">
-                  <Factory className="mr-2 h-4 w-4" />
-                  Capacity Planning
-                </Button>
-              </Link>
               <Link to="/">
                 <Button variant="outline" size="sm">
                   <Home className="mr-2 h-4 w-4" />
@@ -244,12 +238,6 @@ const Index = () => {
                 <Brain className="h-5 w-5 text-primary" />
                 <span className="text-sm font-medium text-foreground">AI-Powered</span>
               </div>
-              <Link to="/capacity-planning">
-                <Button variant="default" size="sm">
-                  <Factory className="mr-2 h-4 w-4" />
-                  Capacity Planning
-                </Button>
-              </Link>
               <Link to="/">
                 <Button variant="outline" size="sm">
                   <Home className="mr-2 h-4 w-4" />
