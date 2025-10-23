@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { BarChart3, Brain, Home, Factory } from "lucide-react";
+import { BarChart3, Brain, Home, Factory, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,12 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MetricCard } from "@/components/MetricCard";
 import { SalesTrendChart } from "@/components/SalesTrendChart";
-import { AIInsightsPanel } from "@/components/AIInsightsPanel";
 import { FilterPanel } from "@/components/FilterPanel";
-import { PlantAnalysisChart } from "@/components/PlantAnalysisChart";
-import { YearlyComparisonChart } from "@/components/YearlyComparisonChart";
+import { ForecastDataTable } from "@/components/ForecastDataTable";
+import { InsightsCard } from "@/components/InsightsCard";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { generateSalesData, generateAIInsights } from "@/data/salesData";
+import { MessageCircle } from "lucide-react";
 
 const Index = () => {
   const allData = useMemo(() => generateSalesData(), []);
@@ -30,10 +30,13 @@ const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState(uniqueProducts[0].name);
   const [selectedPlant, setSelectedPlant] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [tableViewProduct, setTableViewProduct] = useState(uniqueProducts[0].name);
+  const [showForecast, setShowForecast] = useState(false);
+  const [isLoadingForecast, setIsLoadingForecast] = useState(false);
 
   // Handle initial data loading
   const handleLoadData = () => {
@@ -74,15 +77,32 @@ const Index = () => {
     }, 5000);
   };
 
+  const handleCategoryChange = (value: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedCategory(value);
+      setIsLoading(false);
+    }, 5000);
+  };
+
+  const handleGenerateForecast = async () => {
+    setIsLoadingForecast(true);
+    // Simulate loading time for forecast generation
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsLoadingForecast(false);
+    setShowForecast(true);
+  };
+
   // Filter and aggregate data based on selections
   const filteredData = useMemo(() => {
     return allData.filter(item => {
       const matchesProduct = item.name === selectedProduct;
       const matchesPlant = selectedPlant === "all" || item.plant === selectedPlant;
       const matchesArea = selectedArea === "all" || item.area === selectedArea;
-      return matchesProduct && matchesPlant && matchesArea;
+      const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+      return matchesProduct && matchesPlant && matchesArea && matchesCategory;
     });
-  }, [allData, selectedProduct, selectedPlant, selectedArea]);
+  }, [allData, selectedProduct, selectedPlant, selectedArea, selectedCategory]);
 
   // Aggregate sales data across filtered items
   const currentProduct = useMemo(() => {
@@ -370,13 +390,32 @@ const Index = () => {
 
       <div className="container mx-auto px-6 py-8">
         {/* Page Title */}
-        <div className="mb-8">
-          <h2 className="mb-2 text-3xl font-medium text-foreground">
-            Sales Analytics Dashboard
-          </h2>
-          <p className="text-muted-foreground">
-            AI-powered sales forecasting and analytics to support production planning and strategic decision-making
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h2 className="mb-2 text-3xl font-medium text-foreground">
+              Sales Analytics Dashboard
+            </h2>
+            <p className="text-muted-foreground">
+              AI-powered sales forecasting and analytics to support production planning and strategic decision-making
+            </p>
+          </div>
+          {!showForecast && (
+            <Button
+              onClick={handleGenerateForecast}
+              disabled={isLoadingForecast}
+              size="lg"
+              className="ml-4"
+            >
+              {isLoadingForecast ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Forecast"
+              )}
+            </Button>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-4">
@@ -390,6 +429,8 @@ const Index = () => {
               onPlantChange={handlePlantChange}
               selectedArea={selectedArea}
               onAreaChange={handleAreaChange}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
             />
           </div>
 
@@ -422,26 +463,33 @@ const Index = () => {
               />
             </div>
 
-            {/* Chart */}
-            <SalesTrendChart
-              data={currentProduct.data}
-              productName={currentProduct.name}
-            />
+            {/* Forecast Table on Top */}
+            <ForecastDataTable data={currentProduct.data} showForecast={showForecast} />
 
-            {/* Additional Analysis */}
-            <div className="grid gap-6 md:grid-cols-2">
-              <PlantAnalysisChart 
-                data={allData}
-                selectedProduct={selectedProduct}
-              />
-              <YearlyComparisonChart 
-                data={allData}
-                selectedProduct={selectedProduct}
-              />
+            {/* Chart and Insights Side by Side */}
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <SalesTrendChart
+                  data={currentProduct.data}
+                  productName={currentProduct.name}
+                  showForecast={showForecast}
+                  onForecastToggle={setShowForecast}
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <InsightsCard insights={insights} />
+              </div>
             </div>
 
-            {/* AI Insights */}
-            <AIInsightsPanel insights={insights} />
+            {/* AI Chat Button */}
+            <div className="flex justify-center pt-4">
+              <Link to="/ai-chat">
+                <Button size="lg" className="gap-2">
+                  <MessageCircle className="h-5 w-5" />
+                  AI Chat Assistant
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

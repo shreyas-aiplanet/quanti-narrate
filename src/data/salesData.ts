@@ -20,18 +20,22 @@ export interface ProductData {
 // Generate realistic sales data with seasonal patterns and growth trends
 export const generateSalesData = (): ProductData[] => {
   const products = [
-    { id: 'prod-a', name: 'Product A - Industrial Components', category: 'Industrial', baseValue: 12000000, growth: 0.09 },
-    { id: 'prod-b', name: 'Product B - Consumer Goods', category: 'Consumer', baseValue: 20000000, growth: 0.13 },
-    { id: 'prod-c', name: 'Product C - Raw Materials', category: 'Materials', baseValue: 15000000, growth: 0.07 },
-    { id: 'prod-d', name: 'Product D - Finished Goods', category: 'Finished', baseValue: 25000000, growth: 0.11 },
+    { id: 'prod-1', name: 'UC Injector', category: 'Power train', plant: 'DNHA_M', baseValue: 18000000, growth: 0.11 },
+    { id: 'prod-2', name: 'ECU', category: 'Mobility', plant: 'DNHA_M', baseValue: 22000000, growth: 0.13 },
+    { id: 'prod-3', name: 'ECU', category: 'Electrification', plant: 'DNHA_M', baseValue: 25000000, growth: 0.15 },
+    { id: 'prod-4', name: 'INV', category: 'Elefie', plant: 'DNHA-J', baseValue: 16000000, growth: 0.09 },
+    { id: 'prod-5', name: 'Motor', category: 'Thermal', plant: 'DNHA-J', baseValue: 19000000, growth: 0.10 },
+    { id: 'prod-6', name: 'MG', category: 'Elefie', plant: 'DNIN', baseValue: 14000000, growth: 0.08 },
+    { id: 'prod-7', name: '2W ECU', category: 'Power train', plant: 'DNIN', baseValue: 17000000, growth: 0.12 },
+    { id: 'prod-8', name: 'ACG/ACG-S', category: 'Power train', plant: 'DNIN', baseValue: 21000000, growth: 0.11 },
+    { id: 'prod-9', name: 'Starter', category: 'Power train', plant: 'DNIN', baseValue: 15000000, growth: 0.09 },
+    { id: 'prod-10', name: 'Alternator', category: 'Power train', plant: 'DNIN', baseValue: 16000000, growth: 0.10 },
+    { id: 'prod-11', name: 'Thermal', category: 'Components', plant: 'DNKI', baseValue: 13000000, growth: 0.07 },
+    { id: 'prod-12', name: 'Export', category: 'Components', plant: 'DNKI', baseValue: 20000000, growth: 0.14 },
+    { id: 'prod-13', name: 'AC', category: 'Components', plant: 'DNKI', baseValue: 18000000, growth: 0.10 },
+    { id: 'prod-14', name: 'Tube&Hose', category: 'Components', plant: 'DNKI', baseValue: 12000000, growth: 0.08 },
+    { id: 'prod-15', name: 'TMU', category: 'Components', plant: 'DNKI', baseValue: 14000000, growth: 0.09 },
   ];
-
-  const plantMultipliers: Record<string, number> = {
-    'plant-1': 1.2,  // North Plant - Higher capacity
-    'plant-2': 0.9,  // South Plant - Smaller operations
-    'plant-3': 1.1,  // East Plant - Medium capacity
-    'plant-4': 0.85, // West Plant - Newer facility
-  };
 
   const areaMultipliers: Record<string, number> = {
     'area-1': 1.3,  // North America - Largest market
@@ -43,15 +47,13 @@ export const generateSalesData = (): ProductData[] => {
   const results: ProductData[] = [];
 
   products.forEach(product => {
-    plants.forEach(plant => {
-      areas.forEach(area => {
-        const plantMultiplier = plantMultipliers[plant.id];
-        const areaMultiplier = areaMultipliers[area.id];
-        const baseValue = product.baseValue * plantMultiplier * areaMultiplier;
-        
-        // Add product-specific variations
-        const productVariation = product.id === 'prod-b' ? 1.15 : 
-                                 product.id === 'prod-d' ? 1.1 : 1.0;
+    areas.forEach(area => {
+      const areaMultiplier = areaMultipliers[area.id];
+      const baseValue = product.baseValue * areaMultiplier;
+
+      // Add product-specific variations
+      const productVariation = product.category === 'Electrification' ? 1.15 :
+                               product.category === 'Power train' ? 1.1 : 1.0;
         
         const data: SalesDataPoint[] = [];
         
@@ -106,17 +108,16 @@ export const generateSalesData = (): ProductData[] => {
             },
           });
         }
-        
+
         results.push({
-          id: `${product.id}-${plant.id}-${area.id}`,
+          id: `${product.id}-${area.id}`,
           name: product.name,
           category: product.category,
-          plant: plant.id,
+          plant: product.plant,
           area: area.id,
           data,
         });
       });
-    });
   });
 
   return results;
@@ -133,82 +134,125 @@ export interface AIInsight {
 
 export const generateAIInsights = (productId: string): AIInsight[] => {
   const insightMap: Record<string, AIInsight[]> = {
-    'prod-a': [
+    'prod-1': [
       {
         id: 'ins-1',
         type: 'trend',
-        title: 'Steady Growth Pattern',
-        description: 'Product A shows consistent 8% YoY growth driven by industrial sector expansion and increased demand for automation components.',
+        title: 'Strong Powertrain Demand',
+        description: 'UC Injector shows robust 11% YoY growth driven by automotive sector expansion.',
         impact: 'high',
       },
       {
         id: 'ins-2',
-        type: 'alert',
-        title: 'Market Saturation Risk',
-        description: 'Forecast indicates potential market saturation in FY32-FY33. Consider diversification or market expansion strategies.',
-        impact: 'medium',
-        fiscalYear: 'FY32',
+        type: 'opportunity',
+        title: 'Asia Pacific Expansion',
+        description: 'Emerging markets show 30% higher demand. Consider capacity expansion in FY28-FY30.',
+        impact: 'high',
+        fiscalYear: 'FY28',
       },
-    ],
-    'prod-b': [
       {
         id: 'ins-3',
-        type: 'opportunity',
-        title: 'Strong Consumer Demand',
-        description: 'Product B demonstrates robust 12% YoY growth, indicating strong consumer market positioning and brand strength.',
-        impact: 'high',
+        type: 'alert',
+        title: 'Supply Chain Optimization Needed',
+        description: 'Monitor component availability as demand increases to prevent bottlenecks.',
+        impact: 'medium',
       },
+    ],
+    'prod-2': [
       {
         id: 'ins-4',
         type: 'trend',
-        title: 'Seasonal Peak Patterns',
-        description: 'Analysis reveals Q4 peaks correlating with holiday seasons. Inventory planning should account for 25% surge during these periods.',
-        impact: 'medium',
+        title: 'Mobility ECU Growth',
+        description: 'Strong 13% YoY growth reflecting mobility sector transformation and digitalization.',
+        impact: 'high',
       },
-    ],
-    'prod-c': [
       {
         id: 'ins-5',
-        type: 'alert',
-        title: 'Moderate Growth Trajectory',
-        description: 'Product C shows 6% YoY growth, below industry average. Raw material pricing pressures may impact margins.',
-        impact: 'medium',
+        type: 'opportunity',
+        title: 'Smart Mobility Integration',
+        description: 'Connected vehicle trends creating new revenue streams. Forecast shows 25% upside by FY32.',
+        impact: 'high',
+        fiscalYear: 'FY32',
       },
       {
         id: 'ins-6',
-        type: 'opportunity',
-        title: 'Supply Chain Optimization',
-        description: 'Predictable demand patterns present opportunity for just-in-time inventory systems, potentially reducing carrying costs by 15%.',
-        impact: 'high',
+        type: 'alert',
+        title: 'Technology Refresh Cycle',
+        description: 'Plan for product updates to maintain competitive edge in rapidly evolving market.',
+        impact: 'medium',
       },
     ],
-    'prod-d': [
+    'prod-3': [
       {
         id: 'ins-7',
         type: 'trend',
-        title: 'Market Leadership Position',
-        description: 'Product D maintains strong 10% YoY growth with highest absolute revenue. Market share expansion continues across all regions.',
+        title: 'Electrification Leading Growth',
+        description: 'ECU for electrification shows exceptional 15% YoY growth as EV adoption accelerates.',
         impact: 'high',
       },
       {
         id: 'ins-8',
         type: 'opportunity',
-        title: 'Export Market Potential',
-        description: 'Forecast models suggest untapped export markets could add 20% additional revenue by FY30 with targeted expansion.',
+        title: 'EV Market Expansion',
+        description: 'Electric vehicle penetration driving sustained demand. Consider doubling capacity by FY30.',
         impact: 'high',
         fiscalYear: 'FY30',
+      },
+      {
+        id: 'ins-9',
+        type: 'alert',
+        title: 'Regulatory Compliance',
+        description: 'Monitor evolving emission standards to ensure product alignment with regulations.',
+        impact: 'medium',
       },
     ],
   };
 
-  return insightMap[productId] || [];
+  // Return specific insights if available, otherwise return generic insights
+  if (insightMap[productId]) {
+    return insightMap[productId];
+  }
+
+  // Generic insights for other products
+  return [
+    {
+      id: 'ins-generic-1',
+      type: 'trend',
+      title: 'Stable Growth Pattern',
+      description: 'Product shows consistent growth aligned with industry trends and market demand.',
+      impact: 'medium',
+    },
+    {
+      id: 'ins-generic-2',
+      type: 'opportunity',
+      title: 'Market Expansion Potential',
+      description: 'Analysis indicates opportunities for geographic expansion and market penetration.',
+      impact: 'medium',
+    },
+    {
+      id: 'ins-generic-3',
+      type: 'alert',
+      title: 'Monitor Competition',
+      description: 'Keep track of competitive dynamics and adjust strategy as market evolves.',
+      impact: 'low',
+    },
+  ];
 };
 
 export const plants = [
-  { id: 'plant-1', name: 'North Plant' },
-  { id: 'plant-2', name: 'South Plant' },
-  { id: 'plant-3', name: 'East Plant' },
-  { id: 'plant-4', name: 'West Plant' },
+  { id: 'DNHA_M', name: 'DNHA-M' },
+  { id: 'DNHA-J', name: 'DNHA-J' },
+  { id: 'DNIN', name: 'DNIN' },
+  { id: 'DNKI', name: 'DNKI' },
+];
+
+export const categories = [
+  { id: 'Power train', name: 'Power train' },
+  { id: 'Mobility', name: 'Mobility' },
+  { id: 'Electrification', name: 'Electrification' },
+  { id: 'Elefie', name: 'Elefie' },
+  { id: 'Thermal', name: 'Thermal' },
+  { id: 'Components', name: 'Components' },
 ];
 
 export const areas = [

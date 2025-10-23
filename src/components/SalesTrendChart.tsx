@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   LineChart,
   Line,
@@ -14,27 +13,26 @@ import {
   ComposedChart,
 } from "recharts";
 import { SalesDataPoint } from "@/data/salesData";
-import { Loader2 } from "lucide-react";
 
 interface SalesTrendChartProps {
   data: SalesDataPoint[];
   productName: string;
+  showForecast?: boolean;
+  onForecastToggle?: (show: boolean) => void;
 }
 
-export const SalesTrendChart = ({ data, productName }: SalesTrendChartProps) => {
-  const [showForecast, setShowForecast] = useState(false);
-  const [isLoadingForecast, setIsLoadingForecast] = useState(false);
+export const SalesTrendChart = ({
+  data,
+  productName,
+  showForecast: externalShowForecast,
+  onForecastToggle
+}: SalesTrendChartProps) => {
+  const [internalShowForecast, setInternalShowForecast] = useState(false);
+
+  const showForecast = externalShowForecast !== undefined ? externalShowForecast : internalShowForecast;
 
   const formatCurrency = (value: number) => {
     return `$${(value / 1000000).toFixed(1)}M`;
-  };
-
-  const handleGenerateForecast = async () => {
-    setIsLoadingForecast(true);
-    // Simulate loading time for forecast generation
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoadingForecast(false);
-    setShowForecast(true);
   };
 
   // Filter data based on forecast visibility
@@ -64,32 +62,12 @@ export const SalesTrendChart = ({ data, productName }: SalesTrendChartProps) => 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="space-y-1.5">
-            <CardTitle>Sales Trend Analysis</CardTitle>
-            <CardDescription>
-              {showForecast
-                ? `Historical data (FY23-FY25) and AI-powered forecast (FY26-FY35) for ${productName}`
-                : `Historical sales data for ${productName}`}
-            </CardDescription>
-          </div>
-          {!showForecast && (
-            <Button
-              onClick={handleGenerateForecast}
-              disabled={isLoadingForecast}
-              className="ml-4"
-            >
-              {isLoadingForecast ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                "Generate Forecast"
-              )}
-            </Button>
-          )}
-        </div>
+        <CardTitle>Sales Trend Analysis</CardTitle>
+        <CardDescription>
+          {showForecast
+            ? `Historical data (FY23-FY25) and AI-powered forecast (FY26-FY35) for ${productName}`
+            : `Historical sales data for ${productName}`}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[400px] w-full">
@@ -114,7 +92,7 @@ export const SalesTrendChart = ({ data, productName }: SalesTrendChartProps) => 
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ paddingTop: "20px" }} />
-              
+
               {/* Confidence interval area */}
               <Area
                 type="monotone"
@@ -129,7 +107,7 @@ export const SalesTrendChart = ({ data, productName }: SalesTrendChartProps) => 
                 stroke="none"
                 fill="url(#confidenceGradient)"
               />
-              
+
               {/* Historical sales line */}
               <Line
                 type="monotone"
@@ -154,7 +132,7 @@ export const SalesTrendChart = ({ data, productName }: SalesTrendChartProps) => 
                 }}
                 name="Actual Sales"
               />
-              
+
               {/* Forecasted sales line */}
               <Line
                 type="monotone"

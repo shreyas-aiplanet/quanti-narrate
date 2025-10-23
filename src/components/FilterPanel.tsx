@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ProductData, plants, areas } from "@/data/salesData";
+import { ProductData, plants, areas, categories } from "@/data/salesData";
 
 interface FilterPanelProps {
   products: ProductData[];
@@ -17,6 +17,8 @@ interface FilterPanelProps {
   onPlantChange: (value: string) => void;
   selectedArea: string;
   onAreaChange: (value: string) => void;
+  selectedCategory?: string;
+  onCategoryChange?: (value: string) => void;
 }
 
 export const FilterPanel = ({
@@ -27,13 +29,15 @@ export const FilterPanel = ({
   onPlantChange,
   selectedArea,
   onAreaChange,
+  selectedCategory,
+  onCategoryChange,
 }: FilterPanelProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Filters</CardTitle>
         <CardDescription>
-          Customize your view by selecting product, plant, and region
+          Customize your view by selecting filters
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -52,6 +56,25 @@ export const FilterPanel = ({
             </SelectContent>
           </Select>
         </div>
+
+        {onCategoryChange && (
+          <div className="space-y-2">
+            <Label htmlFor="category-select">Category</Label>
+            <Select value={selectedCategory} onValueChange={onCategoryChange}>
+              <SelectTrigger id="category-select">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Label htmlFor="plant-select">Plant</Label>
