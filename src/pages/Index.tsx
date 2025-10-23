@@ -13,7 +13,7 @@ import { generateSalesData, generateAIInsights } from "@/data/salesData";
 
 const Index = () => {
   const allData = useMemo(() => generateSalesData(), []);
-  
+
   // Get unique products for the filter
   const uniqueProducts = useMemo(() => {
     const seen = new Set();
@@ -23,11 +23,21 @@ const Index = () => {
       return true;
     });
   }, [allData]);
-  
+
   const [selectedProduct, setSelectedProduct] = useState(uniqueProducts[0].name);
   const [selectedPlant, setSelectedPlant] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Handle initial data loading
+  const handleLoadData = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setDataLoaded(true);
+      setIsLoading(false);
+    }, 2500); // 2.5 seconds
+  };
 
   // Handle filter changes with loading delay
   const handleProductChange = (value: string) => {
@@ -135,6 +145,73 @@ const Index = () => {
         return sum + ((d.sales - prev.sales) / prev.sales) * 100;
       }, 0) / (historicalData.length - 1)
     : 0;
+
+  // Show initial load button if data not loaded
+  if (!dataLoaded) {
+    return (
+      <div className="min-h-screen bg-background">
+        {isLoading && <LoadingScreen />}
+        {/* Header */}
+        <header className="border-b">
+          <div className="container mx-auto flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                <BarChart3 className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-medium text-foreground">DNHA-M Analytics</h1>
+                <p className="text-sm text-muted-foreground">Sales Forecasting Platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+                <Brain className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium text-foreground">AI-Powered</span>
+              </div>
+              <Link to="/capacity-planning">
+                <Button variant="default" size="sm">
+                  <Factory className="mr-2 h-4 w-4" />
+                  Capacity Planning
+                </Button>
+              </Link>
+              <Link to="/">
+                <Button variant="outline" size="sm">
+                  <Home className="mr-2 h-4 w-4" />
+                  Home
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex min-h-[70vh] flex-col items-center justify-center">
+            <div className="flex flex-col items-center gap-6 text-center">
+              <div className="rounded-full bg-primary/10 p-6">
+                <BarChart3 className="h-16 w-16 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-3xl font-medium text-foreground">
+                  Sales Analytics Dashboard
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-md">
+                  AI-powered sales forecasting and analytics to support production planning and strategic decision-making
+                </p>
+              </div>
+              <Button
+                onClick={handleLoadData}
+                size="lg"
+                className="mt-4"
+              >
+                <BarChart3 className="mr-2 h-5 w-5" />
+                Load Sales Data
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
