@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BarChart3, Brain, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { AIInsightsPanel } from "@/components/AIInsightsPanel";
 import { FilterPanel } from "@/components/FilterPanel";
 import { PlantAnalysisChart } from "@/components/PlantAnalysisChart";
 import { YearlyComparisonChart } from "@/components/YearlyComparisonChart";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { generateSalesData, generateAIInsights } from "@/data/salesData";
 
 const Index = () => {
@@ -26,6 +27,32 @@ const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState(uniqueProducts[0].name);
   const [selectedPlant, setSelectedPlant] = useState("all");
   const [selectedArea, setSelectedArea] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Handle filter changes with loading delay
+  const handleProductChange = (value: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedProduct(value);
+      setIsLoading(false);
+    }, 5000);
+  };
+
+  const handlePlantChange = (value: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedPlant(value);
+      setIsLoading(false);
+    }, 5000);
+  };
+
+  const handleAreaChange = (value: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setSelectedArea(value);
+      setIsLoading(false);
+    }, 5000);
+  };
 
   // Filter and aggregate data based on selections
   const filteredData = useMemo(() => {
@@ -111,6 +138,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {isLoading && <LoadingScreen />}
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -155,11 +183,11 @@ const Index = () => {
             <FilterPanel
               products={uniqueProducts}
               selectedProduct={selectedProduct}
-              onProductChange={setSelectedProduct}
+              onProductChange={handleProductChange}
               selectedPlant={selectedPlant}
-              onPlantChange={setSelectedPlant}
+              onPlantChange={handlePlantChange}
               selectedArea={selectedArea}
-              onAreaChange={setSelectedArea}
+              onAreaChange={handleAreaChange}
             />
           </div>
 
