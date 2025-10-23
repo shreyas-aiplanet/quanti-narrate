@@ -1,7 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { BarChart3, Brain, Home, Factory } from "lucide-react";
+import { BarChart3, Brain, Home, Factory, Table as TableIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MetricCard } from "@/components/MetricCard";
 import { SalesTrendChart } from "@/components/SalesTrendChart";
 import { AIInsightsPanel } from "@/components/AIInsightsPanel";
@@ -29,6 +32,8 @@ const Index = () => {
   const [selectedArea, setSelectedArea] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [tableViewProduct, setTableViewProduct] = useState(uniqueProducts[0].name);
 
   // Handle initial data loading
   const handleLoadData = () => {
@@ -37,6 +42,11 @@ const Index = () => {
       setDataLoaded(true);
       setIsLoading(false);
     }, 2500); // 2.5 seconds
+  };
+
+  // Handle switching to dashboard view
+  const handleShowDashboard = () => {
+    setShowDashboard(true);
   };
 
   // Handle filter changes with loading delay
@@ -208,6 +218,127 @@ const Index = () => {
               </Button>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show table view after data is loaded but before dashboard
+  if (dataLoaded && !showDashboard) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b">
+          <div className="container mx-auto flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                <BarChart3 className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-medium text-foreground">DNHA-M Analytics</h1>
+                <p className="text-sm text-muted-foreground">Sales Forecasting Platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+                <Brain className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium text-foreground">AI-Powered</span>
+              </div>
+              <Link to="/capacity-planning">
+                <Button variant="default" size="sm">
+                  <Factory className="mr-2 h-4 w-4" />
+                  Capacity Planning
+                </Button>
+              </Link>
+              <Link to="/">
+                <Button variant="outline" size="sm">
+                  <Home className="mr-2 h-4 w-4" />
+                  Home
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <div className="container mx-auto px-6 py-8">
+          {/* Page Title */}
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h2 className="mb-2 text-3xl font-medium text-foreground">
+                Historical Sales Data
+              </h2>
+              <p className="text-muted-foreground">
+                Actual sales data across all products, plants, and geographical areas
+              </p>
+            </div>
+            <Button onClick={handleShowDashboard} size="lg">
+              <BarChart3 className="mr-2 h-5 w-5" />
+              View Analytics Dashboard
+            </Button>
+          </div>
+
+          {/* Product Selector */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">
+                Select Product:
+              </label>
+              <Select value={tableViewProduct} onValueChange={setTableViewProduct}>
+                <SelectTrigger className="w-[300px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {uniqueProducts.map((product) => (
+                    <SelectItem key={product.id} value={product.name}>
+                      {product.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Table View */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{tableViewProduct}</CardTitle>
+              <CardDescription>
+                Category: {uniqueProducts.find(p => p.name === tableViewProduct)?.category}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Plant</TableHead>
+                      <TableHead>Area</TableHead>
+                      <TableHead>Fiscal Year</TableHead>
+                      <TableHead className="text-right">Sales ($M)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allData
+                      .filter(item => item.name === tableViewProduct)
+                      .flatMap((item) =>
+                        item.data
+                          .filter((dataPoint) => !dataPoint.forecast)
+                          .map((dataPoint, idx) => (
+                            <TableRow key={`${item.id}-${idx}`}>
+                              <TableCell className="font-medium">{item.plant}</TableCell>
+                              <TableCell>{item.area}</TableCell>
+                              <TableCell>{dataPoint.fiscalYear}</TableCell>
+                              <TableCell className="text-right">
+                                ${(dataPoint.sales / 1000000).toFixed(2)}M
+                              </TableCell>
+                            </TableRow>
+                          ))
+                      )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
