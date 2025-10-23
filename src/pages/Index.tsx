@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { BarChart3, Brain, Home, Factory, Loader2 } from "lucide-react";
+import { BarChart3, Brain, Home, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,8 +35,8 @@ const Index = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [tableViewProduct, setTableViewProduct] = useState(uniqueProducts[0].name);
-  const [showForecast, setShowForecast] = useState(false);
-  const [isLoadingForecast, setIsLoadingForecast] = useState(false);
+  const [showForecast, setShowForecast] = useState(true);
+  const [isGeneratingForecast, setIsGeneratingForecast] = useState(false);
 
   // Handle initial data loading
   const handleLoadData = () => {
@@ -49,7 +49,11 @@ const Index = () => {
 
   // Handle switching to dashboard view
   const handleShowDashboard = () => {
-    setShowDashboard(true);
+    setIsGeneratingForecast(true);
+    setTimeout(() => {
+      setShowDashboard(true);
+      setIsGeneratingForecast(false);
+    }, 2500); // 2.5 seconds
   };
 
   // Handle filter changes with loading delay
@@ -83,14 +87,6 @@ const Index = () => {
       setSelectedCategory(value);
       setIsLoading(false);
     }, 5000);
-  };
-
-  const handleGenerateForecast = async () => {
-    setIsLoadingForecast(true);
-    // Simulate loading time for forecast generation
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoadingForecast(false);
-    setShowForecast(true);
   };
 
   // Filter and aggregate data based on selections
@@ -241,6 +237,7 @@ const Index = () => {
   if (dataLoaded && !showDashboard) {
     return (
       <div className="min-h-screen bg-background">
+        {isGeneratingForecast && <LoadingScreen />}
         {/* Header */}
         <header className="border-b">
           <div className="container mx-auto flex items-center justify-between px-6 py-4">
@@ -279,9 +276,18 @@ const Index = () => {
                 Actual sales data across all products, plants, and geographical areas
               </p>
             </div>
-            <Button onClick={handleShowDashboard} size="lg">
-              <BarChart3 className="mr-2 h-5 w-5" />
-              View Analytics Dashboard
+            <Button onClick={handleShowDashboard} size="lg" disabled={isGeneratingForecast}>
+              {isGeneratingForecast ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Generating Forecast...
+                </>
+              ) : (
+                <>
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  Generate Forecast
+                </>
+              )}
             </Button>
           </div>
 
@@ -372,12 +378,6 @@ const Index = () => {
               <Brain className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium text-foreground">AI-Powered</span>
             </div>
-            <Link to="/capacity-planning">
-              <Button variant="default" size="sm">
-                <Factory className="mr-2 h-4 w-4" />
-                Capacity Planning
-              </Button>
-            </Link>
             <Link to="/">
               <Button variant="outline" size="sm">
                 <Home className="mr-2 h-4 w-4" />
@@ -390,32 +390,13 @@ const Index = () => {
 
       <div className="container mx-auto px-6 py-8">
         {/* Page Title */}
-        <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h2 className="mb-2 text-3xl font-medium text-foreground">
-              Sales Analytics Dashboard
-            </h2>
-            <p className="text-muted-foreground">
-              AI-powered sales forecasting and analytics to support production planning and strategic decision-making
-            </p>
-          </div>
-          {!showForecast && (
-            <Button
-              onClick={handleGenerateForecast}
-              disabled={isLoadingForecast}
-              size="lg"
-              className="ml-4"
-            >
-              {isLoadingForecast ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                "Generate Forecast"
-              )}
-            </Button>
-          )}
+        <div className="mb-8">
+          <h2 className="mb-2 text-3xl font-medium text-foreground">
+            Sales Analytics Dashboard
+          </h2>
+          <p className="text-muted-foreground">
+            AI-powered sales forecasting and analytics to support production planning and strategic decision-making
+          </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-4">
