@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { BarChart3, Brain, Home, Loader2 } from "lucide-react";
+import { BarChart3, Brain, Home, Loader2, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +12,6 @@ import { ForecastDataTable } from "@/components/ForecastDataTable";
 import { InsightsCard } from "@/components/InsightsCard";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { generateSalesData, generateAIInsights } from "@/data/salesData";
-import { MessageCircle } from "lucide-react";
 
 const Index = () => {
   const allData = useMemo(() => generateSalesData(), []);
@@ -378,6 +377,12 @@ const Index = () => {
               <Brain className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium text-foreground">AI-Powered</span>
             </div>
+            <Link to="/ai-chat">
+              <Button variant="default" size="sm">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                AI Chat
+              </Button>
+            </Link>
             <Link to="/">
               <Button variant="outline" size="sm">
                 <Home className="mr-2 h-4 w-4" />
@@ -460,16 +465,6 @@ const Index = () => {
               <div className="lg:col-span-1">
                 <InsightsCard insights={insights} />
               </div>
-            </div>
-
-            {/* AI Chat Button */}
-            <div className="flex justify-center pt-4">
-              <Link to="/ai-chat">
-                <Button size="lg" className="gap-2">
-                  <MessageCircle className="h-5 w-5" />
-                  AI Chat Assistant
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
